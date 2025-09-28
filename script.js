@@ -195,9 +195,14 @@ function displayGame() {
     const game = GameController();
     const playerTurn = document.querySelector('.turn');
     const boardDiv = document.querySelector('.board');
+    const row0 = document.querySelector('.row0');
+    const row1 = document.querySelector('.row1');
+    const row2 = document.querySelector('.row2');
 
     const updateScreen = () => {
-        boardDiv.textContent = ""; //clears board
+        row0.textContent = "";
+        row1.textContent = "";
+        row2.textContent = "";
 
         //gets newest version of board and player turn
         const board = game.getBoard();
@@ -207,23 +212,37 @@ function displayGame() {
         playerTurn.textContent = `${activePlayer.name}'s turn...`
 
         // render tic-tac-toe board 
-        board.forEach(row => {
-            row.forEach((cell, index) => {
+        board.forEach((row, rowIndex) => {
+            row.forEach((cell, colIndex) => {
                 const cellButton = document.createElement("button");
                 cellButton.classList.add("cell");
-
                 cellButton.textContent = cell.getValue();
-                boardDiv.appendChild(cellButton);
+                cellButton.dataset.row = rowIndex;
+                cellButton.dataset.col = colIndex;
+
+                if (rowIndex === 0) row0.appendChild(cellButton);
+                else if (rowIndex == 1) row1.appendChild(cellButton);
+                else row2.appendChild(cellButton);
             })
         })
     }
 
     function clickHandlerBoard(e) {
-        const selectedColumn = e.target.dataset.column;
-        if (!selectedColumn) return;
+        const row = e.target.dataset.row;
+        const col = e.target.dataset.col;
+        if (row === undefined || col === undefined) return;
 
-        game.playRound(row, col);
+        game.playRound(parseInt(row), parseInt(col));
+        
         updateScreen();
+        const winner = checkWinner(game.getBoard());
+        if (winner) {
+            playerTurn.textContent = winner === "x" ? "Player One Won!" : "Player Two Won!";
+            row0.removeEventListener("click", clickHandlerBoard);
+            row1.removeEventListener("click", clickHandlerBoard);
+            row2.removeEventListener("click", clickHandlerBoard);
+            return;
+        }
     }
     boardDiv.addEventListener("click", clickHandlerBoard);
 
@@ -231,5 +250,5 @@ function displayGame() {
 }   
 
 displayGame();
-startGame();
+// startGame();
 
